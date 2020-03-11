@@ -22,7 +22,35 @@ router
     const posts = await postModel.find(req.query);
     res.status(200).json(posts);
 })
-    .post(async (req, res) => { })
+    .post(async (req, res) => {
+    try {
+        const sentPost = req.body;
+        if (!sentPost) {
+            console.log("no sent post");
+            res
+                .status(404)
+                .json({ errorMessage: "The post with that ID does not exist" });
+        }
+        else {
+            if (!sentPost.title || !sentPost.contents) {
+                console.log("no post info");
+                res.status(400).json({
+                    errorMessage: "Please provide title and contents for the post"
+                });
+            }
+            else {
+                sentPost.id = shortId.generate();
+                const newPost = await postModel.insert(sentPost);
+                res.status(200).json(newPost);
+            }
+        }
+    }
+    catch (error) {
+        res
+            .status(500)
+            .json({ errorMessage: "There was an error updating your post" });
+    }
+})
     .delete(async (req, res) => {
     const id = req.body.id;
     console.log(id);
@@ -70,16 +98,23 @@ router
             .json({ errorMessage: "The post with that ID does not exist" });
     }
     else {
-        if (!sentPost.title || !sentPost.contents) {
-            console.log("no post info");
-            res.status(400).json({
-                errorMessage: "Please provide title and contents for the post"
-            });
+        try {
+            if (!sentPost.title || !sentPost.contents) {
+                console.log("no post info");
+                res.status(400).json({
+                    errorMessage: "Please provide title and contents for the post"
+                });
+            }
+            else {
+                await postModel.update(id, sentPost);
+                const newPost = await postModel.findById(id);
+                res.status(200).json(newPost);
+            }
         }
-        else {
-            await postModel.update(id, sentPost);
-            const newPost = await postModel.findById(id);
-            res.status(200).json(newPost);
+        catch (error) {
+            res
+                .status(500)
+                .json({ errorMessage: "There was an error updating your post" });
         }
     }
 });

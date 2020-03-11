@@ -28,7 +28,25 @@ router
     const posts: Array<object> = await postModel.find(req.query);
     res.status(200).json(posts);
   })
-  .post(async (req: Request, res: Response) => {})
+  .post(async (req: Request, res: Response) => {
+    try {
+      const sentPost: Post = req.body;
+      if (!sentPost || !sentPost.title || !sentPost.contents) {
+        console.log("no post info");
+        res.status(400).json({
+          errorMessage: "Please provide title and contents for the post"
+        });
+      } else {
+        sentPost.id = shortId.generate();
+        const newPost = await postModel.insert(sentPost);
+        res.status(200).json(newPost);
+      }
+    } catch (error) {
+      res
+        .status(500)
+        .json({ errorMessage: "There was an error updating your post" });
+    }
+  })
   .delete(async (req: Request, res: Response) => {
     const id: string = req.body.id;
     console.log(id);
@@ -74,15 +92,21 @@ router
         .status(404)
         .json({ errorMessage: "The post with that ID does not exist" });
     } else {
-      if (!sentPost.title || !sentPost.contents) {
-        console.log("no post info");
-        res.status(400).json({
-          errorMessage: "Please provide title and contents for the post"
-        });
-      } else {
-        await postModel.update(id, sentPost);
-        const newPost = await postModel.findById(id);
-        res.status(200).json(newPost);
+      try {
+        if (!sentPost.title || !sentPost.contents) {
+          console.log("no post info");
+          res.status(400).json({
+            errorMessage: "Please provide title and contents for the post"
+          });
+        } else {
+          await postModel.update(id, sentPost);
+          const newPost = await postModel.findById(id);
+          res.status(200).json(newPost);
+        }
+      } catch (error) {
+        res
+          .status(500)
+          .json({ errorMessage: "There was an error updating your post" });
       }
     }
   });
