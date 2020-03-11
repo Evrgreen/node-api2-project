@@ -110,4 +110,33 @@ router
       }
     }
   });
+
+//Router endpoints for post comments
+router.route("/:id/comments").get(async (req: Request, res: Response) => {
+  const id: string = req.params.id;
+  const queriedPost = await postModel.findById(id);
+  console.log(queriedPost);
+  console.log(!queriedPost);
+  //   if (!queriedPost) {
+  //     res
+  //       .status(404)
+  //       .json({ errorMessage: "The post with the that ID does not exist" });
+  //   } else {
+  //   try {
+  console.log("looking for comments");
+  const commentPost: Array<object> = await postModel.findPostComments(id);
+  if (!commentPost || commentPost.length < 1) {
+    res.status(400).json({
+      errorMessage: "Was not able to find any comments for that post"
+    });
+  } else {
+    res.status(200).json(commentPost);
+  }
+  //   } catch (error) {
+  //     res.status(500).json({
+  //       errorMessage: "There was an error getting comments",
+  //       error: error
+  //     });
+  //   }
+});
 module.exports = router;
