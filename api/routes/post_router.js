@@ -27,7 +27,9 @@ router
     const id = req.body.id;
     console.log(id);
 });
-router.route("/:id").get(async (req, res) => {
+router
+    .route("/:id")
+    .get(async (req, res) => {
     const id = req.params.id;
     const foundPost = await postModel.findById(id);
     console.log(foundPost);
@@ -36,6 +38,49 @@ router.route("/:id").get(async (req, res) => {
     }
     else {
         res.status(200).json(foundPost);
+    }
+})
+    .delete(async (req, res) => {
+    const id = req.params.id;
+    try {
+        const foundItem = await postModel.findById(id);
+        if (foundItem.length) {
+            postModel.remove(id);
+            res.status(200).json(foundItem);
+        }
+        else {
+            res
+                .status(404)
+                .json({ errorMessage: "Could not find a Post with that Id" });
+        }
+    }
+    catch (err) {
+        res
+            .status(500)
+            .json({ errorMessage: "There was an error deleting that user" });
+    }
+})
+    .put(async (req, res) => {
+    const id = req.params.id;
+    const sentPost = req.body;
+    if (!sentPost) {
+        console.log("no sent post");
+        res
+            .status(404)
+            .json({ errorMessage: "The post with that ID does not exist" });
+    }
+    else {
+        if (!sentPost.title || !sentPost.contents) {
+            console.log("no post info");
+            res.status(400).json({
+                errorMessage: "Please provide title and contents for the post"
+            });
+        }
+        else {
+            await postModel.update(id, sentPost);
+            const newPost = await postModel.findById(id);
+            res.status(200).json(newPost);
+        }
     }
 });
 module.exports = router;
