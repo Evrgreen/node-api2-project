@@ -6,6 +6,6 @@ const postRouter = require("./routes/post_router.js");
 server.use(express.json());
 server.use("/api/posts", postRouter);
 server.get("/", (req, res) => {
-  res.status(200).json({ message: "Welcome to the user page" });
+    res.status(200).json({ message: "Welcome to the user page" });
 });
 module.exports = server;
